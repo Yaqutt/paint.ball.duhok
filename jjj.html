@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07070a">
+<title>Paintball Duhok — Tactical Comms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Official Brand Icons (Font Awesome) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+  :root{
+    --bg:#07070a;
+    --bg-2:#0b0b11;
+    --panel:rgba(14,14,20,0.72);
+    --panel-hi:rgba(22,22,32,0.9);
+    --line:rgba(255,255,255,0.07);
+    --line-strong:rgba(255,255,255,0.16);
+    --text:#f4f4f6;
+    --dim:#9298a5;
+    --mute:#5b6070;
+    --red:#ff2f3e;
+    --red-soft:#ff7a83;
+    --cyan:#3ee0ff;
+    --gold:#e7c76a;
+    
+    /* Brand Colors for Tactical Lock-On */
+    --wa:#25D366;
+    --tg:#0088cc;
+    --sc:#FFFC00;
+    --tt:#fe2c55;
+    
+    --radius:14px;
+    --maxw:1140px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+
+  body{
+    font-family:'Chakra Petch',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    min-height:100dvh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    line-height:1.5;
+    position:relative;
+  }
+
+  /* ============ CINEMATIC OVERLAYS ============ */
+  .cine{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+  }
+  .cine::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(255,47,62,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(0,0,0,0.9) 0%, transparent 65%),
+      radial-gradient(ellipse 90% 70% at 50% 40%, transparent 30%, rgba(0,0,0,0.6) 100%);
+  }
+  .cine::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(62,224,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(62,224,255,0.02) 1px, transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(ellipse 85% 75% at 50% 35%, #000 20%, transparent 80%);
+    -webkit-mask-image:radial-gradient(ellipse 85% 75% at 50% 35%, #000 20%, transparent 80%);
+  }
+
+  .grain{
+    position:fixed;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    opacity:0.04;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  /* ============ SHELL ============ */
+  .shell{
+    position:relative;
+    z-index:5;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    min-height:100dvh;
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    padding:1rem clamp(1rem,4vw,2.5rem);
+    border-bottom:1px solid var(--line);
+    background:rgba(7,7,10,0.65);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    position:sticky;
+    top:0;
+    z-index:30;
+  }
+
+  .brand{display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;min-width:0}
+  .brand-text{display:flex;flex-direction:column;line-height:1;min-width:0}
+  .brand-name{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:1.25rem;letter-spacing:.14em;color:#fff;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-shadow:0 0 14px rgba(255,47,62,.35);
+  }
+  .brand-sub{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.55rem;letter-spacing:.34em;color:var(--mute);
+    text-transform:uppercase;margin-top:3px;white-space:nowrap;
+  }
+
+  .hud-pill{
+    display:inline-flex;align-items:center;gap:.5rem;
+    padding:.45rem .85rem;
+    border:1px solid rgba(62,224,255,.3);
+    border-radius:6px;
+    background:rgba(62,224,255,.05);
+    font-family:'JetBrains Mono',monospace;
+    font-size:.6rem;letter-spacing:.14em;color:var(--cyan);
+    text-transform:uppercase;
+    white-space:nowrap;
+    box-shadow:inset 0 0 12px rgba(62,224,255,.08);
+  }
+  .hud-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--cyan);
+    box-shadow:0 0 10px var(--cyan);
+    animation:hudPulse 1.6s var(--ease) infinite;
+  }
+  @keyframes hudPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+
+  /* ============ MAIN ============ */
+  .main{
+    flex:1;
+    width:100%;
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:clamp(2rem,6vw,4.5rem) clamp(1rem,4vw,2.5rem) clamp(2rem,5vw,3.5rem);
+    display:flex;flex-direction:column;
+    gap:clamp(2rem,5vw,3.5rem);
+  }
+
+  /* ============ HERO (CENTERED) ============ */
+  .hero{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:1rem;
+    max-width:760px;
+    margin:0 auto;
+    width:100%;
+  }
+
+  /* ===== HERO LOGO (MAXIMIZED & PROFESSIONAL) ===== */
+  .hero-logo-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom:.5rem;
+    position:relative;
+  }
+  .hero-logo{
+    width:clamp(140px, 28vw, 220px);
+    height:clamp(140px, 28vw, 220px);
+    border-radius:20px;
+    object-fit:cover;
+    border:1px solid rgba(255,47,62,0.45);
+    box-shadow:
+      0 0 40px -8px rgba(255,47,62,0.65),
+      0 0 80px -16px rgba(255,47,62,0.3),
+      inset 0 0 30px rgba(255,47,62,0.1);
+    background:#0a0a10;
+    position:relative;
+    z-index:1;
+  }
+  .hero-logo-wrap::after{
+    content:'';
+    position:absolute;
+    inset:-10px;
+    border-radius:26px;
+    border:1px solid rgba(255,47,62,0.15);
+    pointer-events:none;
+    z-index:0;
+  }
+  .hero-logo-wrap::before{
+    content:'';
+    position:absolute;
+    inset:-24px;
+    border-radius:32px;
+    border:1px dashed rgba(62,224,255,0.15);
+    pointer-events:none;
+    z-index:0;
+    animation:rot 60s linear infinite;
+  }
+  @keyframes rot{to{transform:rotate(360deg)}}
+
+  .eyebrow{
+    display:flex;align-items:center;gap:.7rem;
+    font-family:'JetBrains Mono',monospace;
+    font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--red);
+    justify-content:center;
+  }
+  .eyebrow::before{
+    content:'';width:26px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--red));
+    box-shadow:0 0 8px var(--red);
+  }
+  .eyebrow::after{
+    content:'';width:26px;height:1px;
+    background:linear-gradient(90deg,var(--red),transparent);
+    box-shadow:0 0 8px var(--red);
+  }
+
+  .title{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(3.2rem,13vw,7.5rem);
+    line-height:.86;letter-spacing:.005em;
+    color:#fff;font-weight:400;
+    text-shadow:0 0 40px rgba(255,47,62,.25), 0 4px 30px rgba(0,0,0,.9);
+  }
+  .title .em{
+    color:var(--red);
+    text-shadow:0 0 30px rgba(255,47,62,.65), 0 0 80px rgba(255,47,62,.35);
+  }
+  .title .cyan{
+    color:var(--cyan);
+    text-shadow:0 0 24px rgba(62,224,255,.55);
+  }
+
+  .lede{
+    max-width:52ch;
+    font-size:clamp(.95rem,1.5vw,1.05rem);
+    color:var(--dim);
+    line-height:1.65;margin-top:.4rem;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  .hero-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+    margin-top:.7rem;
+    justify-content:center;
+  }
+  .tag{
+    display:inline-flex;align-items:center;gap:.4rem;
+    padding:.4rem .75rem;
+    border:1px solid var(--line-strong);
+    border-radius:6px;
+    background:rgba(255,255,255,.02);
+    font-family:'JetBrains Mono',monospace;
+    font-size:.65rem;letter-spacing:.08em;
+    color:var(--dim);
+  }
+  .tag i{font-size:.7rem;color:var(--red)}
+
+  /* ---- SECTION HEAD ---- */
+  .section-head{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    gap:1rem;padding-bottom:.9rem;
+    border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .section-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--dim);font-weight:500;
+    display:flex;align-items:center;gap:.6rem;
+  }
+  .section-title::before{
+    content:'';width:6px;height:6px;background:var(--red);
+    box-shadow:0 0 10px var(--red);
+  }
+  .section-count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.65rem;letter-spacing:.1em;
+    color:var(--mute);
+  }
+
+  /* ---- GRID ---- */
+  .grid{
+    display:grid;grid-template-columns:1fr;gap:.75rem;
+    perspective:1400px;margin-top:.9rem;
+  }
+
+  .card{
+    position:relative;display:flex;align-items:center;gap:1rem;
+    padding:1.1rem 1.2rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    text-decoration:none;color:inherit;
+    overflow:hidden;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:border-color .35s var(--ease),background .35s var(--ease),box-shadow .4s var(--ease),transform .12s linear;
+    transform-style:preserve-3d;will-change:transform;isolation:isolate;
+  }
+
+  /* HUD corner brackets */
+  .card::before,
+  .card::after{
+    content:'';position:absolute;width:14px;height:14px;
+    border-color:rgba(62,224,255,.35);border-style:solid;
+    transition:border-color .35s var(--ease),box-shadow .35s var(--ease);
+    pointer-events:none;z-index:2;
+  }
+  .card::before{top:8px;left:8px;border-width:1.5px 0 0 1.5px;border-top-left-radius:3px}
+  .card::after{bottom:8px;right:8px;border-width:0 1.5px 1.5px 0;border-bottom-right-radius:3px}
+
+  /* animated sheen */
+  .card .sheen{
+    position:absolute;top:0;left:-120%;width:55%;height:100%;
+    background:linear-gradient(100deg,transparent 0%,rgba(62,224,255,.10) 50%,transparent 100%);
+    transition:left .8s var(--ease);pointer-events:none;z-index:1;
+  }
+  .card:hover .sheen,.card:focus-visible .sheen{left:160%}
+
+  .card:hover,.card:focus-visible{
+    background:var(--panel-hi);
+    border-color:rgba(62,224,255,.45);
+    box-shadow:
+      0 22px 45px -20px rgba(0,0,0,.95),
+      0 0 0 1px rgba(62,224,255,.15) inset,
+      0 0 34px -8px rgba(62,224,255,.25);
+    outline:none;
+  }
+  .card:hover::before,.card:focus-visible::before,
+  .card:hover::after,.card:focus-visible::after{
+    border-color:var(--cyan);box-shadow:0 0 8px rgba(62,224,255,.7);
+  }
+
+  /* Channel specific lock-on glows */
+  .card[data-channel="wa"]:hover, .card[data-channel="wa"]:focus-visible{
+    border-color:rgba(37,211,102,.5);
+    box-shadow:0 22px 45px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(37,211,102,.15) inset, 0 0 34px -8px rgba(37,211,102,.3);
+  }
+  .card[data-channel="wa"]:hover .icon-wrap{background:rgba(37,211,102,.15);border-color:var(--wa);color:var(--wa);box-shadow:0 0 22px -4px rgba(37,211,102,.6), inset 0 0 14px rgba(37,211,102,.2);}
+  .card[data-channel="wa"]:hover .card-label{color:var(--wa);}
+  .card[data-channel="wa"]:hover .arrow{color:var(--wa);filter:drop-shadow(0 0 6px rgba(37,211,102,.7));}
+
+  .card[data-channel="tg"]:hover, .card[data-channel="tg"]:focus-visible{
+    border-color:rgba(0,136,204,.5);
+    box-shadow:0 22px 45px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(0,136,204,.15) inset, 0 0 34px -8px rgba(0,136,204,.3);
+  }
+  .card[data-channel="tg"]:hover .icon-wrap{background:rgba(0,136,204,.15);border-color:var(--tg);color:var(--tg);box-shadow:0 0 22px -4px rgba(0,136,204,.6), inset 0 0 14px rgba(0,136,204,.2);}
+  .card[data-channel="tg"]:hover .card-label{color:var(--tg);}
+  .card[data-channel="tg"]:hover .arrow{color:var(--tg);filter:drop-shadow(0 0 6px rgba(0,136,204,.7));}
+
+  .card[data-channel="sc"]:hover, .card[data-channel="sc"]:focus-visible{
+    border-color:rgba(255,252,0,.5);
+    box-shadow:0 22px 45px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(255,252,0,.15) inset, 0 0 34px -8px rgba(255,252,0,.3);
+  }
+  .card[data-channel="sc"]:hover .icon-wrap{background:rgba(255,252,0,.15);border-color:var(--sc);color:var(--sc);box-shadow:0 0 22px -4px rgba(255,252,0,.6), inset 0 0 14px rgba(255,252,0,.2);}
+  .card[data-channel="sc"]:hover .card-label{color:var(--sc);}
+  .card[data-channel="sc"]:hover .arrow{color:var(--sc);filter:drop-shadow(0 0 6px rgba(255,252,0,.7));}
+
+  .card[data-channel="tt"]:hover, .card[data-channel="tt"]:focus-visible{
+    border-color:rgba(254,44,85,.5);
+    box-shadow:0 22px 45px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(254,44,85,.15) inset, 0 0 34px -8px rgba(254,44,85,.3);
+  }
+  .card[data-channel="tt"]:hover .icon-wrap{background:rgba(254,44,85,.15);border-color:var(--tt);color:var(--tt);box-shadow:0 0 22px -4px rgba(254,44,85,.6), inset 0 0 14px rgba(254,44,85,.2);}
+  .card[data-channel="tt"]:hover .card-label{color:var(--tt);}
+  .card[data-channel="tt"]:hover .arrow{color:var(--tt);filter:drop-shadow(0 0 6px rgba(254,44,85,.7));}
+
+  /* primary card */
+  .card--primary{
+    background:linear-gradient(135deg,rgba(255,47,62,.10) 0%,rgba(14,14,20,.85) 55%);
+    border-color:rgba(255,47,62,.28);
+  }
+  .card--primary:hover,.card--primary:focus-visible{
+    border-color:rgba(255,47,62,.6);
+    box-shadow:
+      0 22px 50px -20px rgba(0,0,0,.95),
+      0 0 0 1px rgba(255,47,62,.2) inset,
+      0 0 40px -8px rgba(255,47,62,.45);
+  }
+  .card--primary::before,.card--primary::after{
+    border-color:rgba(255,47,62,.45);
+  }
+  .card--primary:hover::before,.card--primary:hover::after{
+    border-color:var(--red);box-shadow:0 0 8px rgba(255,47,62,.8);
+  }
+
+  .icon-wrap{
+    flex-shrink:0;width:46px;height:46px;border-radius:11px;
+    display:grid;place-items:center;
+    background:rgba(62,224,255,.06);
+    border:1px solid rgba(62,224,255,.2);
+    color:var(--cyan);
+    transition:background .35s var(--ease),border-color .35s var(--ease),color .35s var(--ease),box-shadow .35s var(--ease),transform .35s var(--ease);
+    position:relative;z-index:1;
+    box-shadow:inset 0 0 12px rgba(62,224,255,.08);
+    font-size:1.2rem;
+  }
+  .card:hover .icon-wrap,.card:focus-visible .icon-wrap{
+    transform:scale(1.05);
+  }
+  .card--primary .icon-wrap{
+    background:rgba(255,47,62,.10);
+    border-color:rgba(255,47,62,.35);
+    color:var(--red-soft);
+    box-shadow:inset 0 0 14px rgba(255,47,62,.12);
+  }
+  .card--primary:hover .icon-wrap{
+    background:rgba(255,47,62,.22);
+    border-color:var(--red);
+    color:#fff;
+    box-shadow:0 0 24px -4px rgba(255,47,62,.8), inset 0 0 16px rgba(255,47,62,.25);
+  }
+
+  .card-body{flex:1;min-width:0;position:relative;z-index:1}
+
+  .card-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--mute);margin-bottom:.28rem;font-weight:500;
+    transition:color .35s var(--ease);
+    display:flex;align-items:center;gap:0.5rem;
+  }
+  .card-label .ch-id{
+    font-size:.5rem;color:var(--line-strong);letter-spacing:.1em;
+  }
+  .card:hover .card-label{color:var(--cyan)}
+  .card--primary .card-label{color:rgba(255,47,62,.75)}
+  .card--primary:hover .card-label{color:var(--red)}
+
+  .card-value{
+    font-size:1rem;font-weight:600;color:var(--text);
+    line-height:1.35;word-break:break-word;overflow-wrap:anywhere;
+  }
+  .card-value--phone{
+    font-family:'JetBrains Mono',monospace;
+    font-size:1.14rem;font-weight:700;letter-spacing:.02em;
+    color:#fff;
+    text-shadow:0 0 14px rgba(255,47,62,.55);
+  }
+  .card-sub{
+    font-size:.76rem;color:var(--mute);margin-top:.18rem;
+    font-family:'JetBrains Mono',monospace;letter-spacing:.04em;
+  }
+
+  .arrow{
+    flex-shrink:0;color:var(--mute);
+    transition:transform .35s var(--ease),color .35s var(--ease);
+    position:relative;z-index:1;
+  }
+  .arrow i{font-size:1rem;display:block}
+  .card:hover .arrow,.card:focus-visible .arrow{
+    color:var(--cyan);transform:translate(2px,-2px);
+  }
+  .card--primary:hover .arrow{
+    color:var(--red);filter:drop-shadow(0 0 6px rgba(255,47,62,.8));
+  }
+
+  /* ---- FOOTER ---- */
+  .footer{
+    border-top:1px solid var(--line);
+    padding:1.5rem clamp(1rem,4vw,2.5rem);
+    display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;
+    align-items:center;justify-content:space-between;
+    background:rgba(7,7,10,0.65);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  }
+  .footer-left{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:.75rem 1.25rem;
+  }
+  .footer-mark{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:.95rem;letter-spacing:.18em;color:var(--dim);
+  }
+  .footer-sep{
+    width:1px;height:14px;background:var(--line-strong);
+  }
+  .footer-company{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.62rem;letter-spacing:.14em;color:var(--gold);
+    text-transform:uppercase;
+    text-shadow:0 0 10px rgba(231,199,106,.3);
+  }
+  .footer-meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.62rem;letter-spacing:.14em;color:var(--mute);
+    text-transform:uppercase;
+  }
+  .footer-meta span{color:var(--red)}
+
+  /* ============ RESPONSIVE ============ */
+  @media (min-width:560px){
+    .grid{grid-template-columns:repeat(2,1fr);gap:.9rem}
+    .card{padding:1.25rem 1.35rem}
+  }
+  @media (min-width:900px){
+    .main{gap:3.25rem}
+    .grid{gap:1rem}
+    .card{padding:1.4rem 1.5rem}
+    .icon-wrap{width:50px;height:50px;font-size:1.3rem}
+    .card-value{font-size:1.05rem}
+    .card-value--phone{font-size:1.24rem}
+  }
+  @media (min-width:1024px){
+    .grid{grid-template-columns:repeat(3,1fr)}
+    .card{padding:1.5rem 1.6rem}
+  }
+  @media (max-width:380px){
+    .topbar{padding:.9rem}
+    .brand-name{font-size:1.05rem}
+    .brand-sub{font-size:.5rem;letter-spacing:.26em}
+    .hud-pill{font-size:.55rem;padding:.35rem .6rem}
+    .card{padding:.95rem;gap:.8rem}
+    .icon-wrap{width:42px;height:42px;font-size:1.1rem}
+    .card-value{font-size:.92rem}
+    .card-value--phone{font-size:1.02rem}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms!important;animation-iteration-count:1!important;
+      transition-duration:.01ms!important;
+    }
+  }
+
+  a:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:var(--radius)}
+
+  @supports (padding:max(0px)){
+    .topbar{padding-top:max(1rem,env(safe-area-inset-top))}
+    .footer{padding-bottom:max(1.5rem,env(safe-area-inset-bottom))}
+  }
+</style>
+</head>
+<body>
+
+<!-- CINEMATIC OVERLAYS -->
+<div class="cine" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Paintball Duhok Home">
+      <span class="brand-text">
+        <span class="brand-name">Paintball Duhok</span>
+        <span class="brand-sub">Combat Ops · Est. Duhok</span>
+      </span>
+    </a>
+    <span class="hud-pill">
+      <span class="hud-dot" aria-hidden="true"></span>
+      <span>Live · Open</span>
+    </span>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO SECTION (FULLY CENTERED) -->
+    <section class="hero">
+      <!-- MAXIMIZED LOGO CENTERPIECE -->
+      <div class="hero-logo-wrap">
+        <img src="photo_2026-10-25_00-53-44.jpg" alt="Paintball Duhok Official Logo" class="hero-logo">
+      </div>
+
+      <span class="eyebrow">Welcome to the Arena</span>
+      <h1 class="title">
+        Paintball<br>
+        <span class="em">Duhok</span>
+      </h1>
+      <p class="lede">
+        Your premier tactical paintball destination in the heart of Duhok, Iraq. 
+        Bookings, group missions, and private events — we deploy fast.
+      </p>
+      <div class="hero-meta">
+        <span class="tag">
+          <i class="fa-solid fa-location-dot"></i>
+          Location Terminal: Duhok, Iraq
+        </span>
+        <span class="tag">
+          <i class="fa-regular fa-clock"></i>
+          Daily · 10:00–23:00
+        </span>
+        <span class="tag">
+          <i class="fa-solid fa-phone"></i>
+          Direct Line
+        </span>
+      </div>
+    </section>
+    <!-- END HERO -->
+
+    <section aria-labelledby="contact-title">
+      <div class="section-head">
+        <h2 id="contact-title" class="section-title">Comms Channels</h2>
+        <span class="section-count">06 / SECURED</span>
+      </div>
+
+      <div class="grid" id="grid">
+
+        <!-- PHONE -->
+        <a href="tel:+9647506069494" class="card card--primary" data-tilt data-channel="phone">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-solid fa-phone"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">Hotline <span class="ch-id">CH-01</span></span>
+            <span class="card-value card-value--phone">0750 606 9494</span>
+            <span class="card-sub">Direct · Call or text</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
+        <!-- WHATSAPP -->
+        <a href="https://wa.me/qr/4O7P6MHZK22OC1" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="wa">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-brands fa-whatsapp"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">WhatsApp <span class="ch-id">CH-02</span></span>
+            <span class="card-value">Message on WhatsApp</span>
+            <span class="card-sub">Fast response · Encrypted</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
+        <!-- TELEGRAM -->
+        <a href="https://t.me/+9647506069494" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="tg">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-brands fa-telegram"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">Telegram <span class="ch-id">CH-03</span></span>
+            <span class="card-value">+964 750 606 9494</span>
+            <span class="card-sub">Message · Join Channel</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
+        <!-- SNAPCHAT -->
+        <a href="https://www.snapchat.com/add/paintballduhok?share_id=5KdH1EArRvKKdAQ-QIQkOA&locale=en_US" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="sc">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-brands fa-snapchat"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">Snapchat <span class="ch-id">CH-04</span></span>
+            <span class="card-value">@paintballduhok</span>
+            <span class="card-sub">Live field footage</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
+        <!-- TIKTOK -->
+        <a href="https://www.tiktok.com/@paint.ball.duhok?_r=1&_t=ZS-9AphpnQi4VL" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="tt">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-brands fa-tiktok"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">TikTok <span class="ch-id">CH-05</span></span>
+            <span class="card-value">@paint.ball.duhok</span>
+            <span class="card-sub">Game highlights</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
+        <!-- LOCATION -->
+        <a href="https://maps.apple.com/place?map=explore&coordinate=36.850925%2C42.909724&name=Duhok" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="loc">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-solid fa-map-location-dot"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">Base Location <span class="ch-id">CH-06</span></span>
+            <span class="card-value">Duhok · Iraq</span>
+            <span class="card-sub">Open in Apple Maps</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-left">
+      <span class="footer-mark">Paintball Duhok</span>
+      <span class="footer-sep" aria-hidden="true"></span>
+      <span class="footer-company">Yaqut Company</span>
+    </div>
+    <span class="footer-meta">© <span id="year"></span> · All Rights Reserved · <span>SECURE CONNECTION</span></span>
+  </footer>
+
+</div>
+
+<script>
+  // Set current year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Card 3D Tilt (touch + mouse)
+  (function tilt(){
+    const cards = document.querySelectorAll('[data-tilt]');
+    if (!cards.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const MAX = 8; const SCALE = 1.012; const LIFT = 4;
+    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    let rafId = null, active = null, lastX = 0, lastY = 0;
+
+    function apply(card, cx, cy){
+      const r = card.getBoundingClientRect();
+      const px = Math.min(1, Math.max(0, (cx - r.left) / r.width));
+      const py = Math.min(1, Math.max(0, (cy - r.top) / r.height));
+      const rotY = (px - 0.5) * MAX * 2;
+      const rotX = (0.5 - py) * MAX * 2;
+      card.style.transform = `perspective(1200px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(${LIFT}px) scale(${SCALE})`;
+    }
+    function reset(card){ if (card) card.style.transform = ''; }
+
+    function onMove(e){
+      if (!active) return;
+      const pt = e.touches ? e.touches[0] : e;
+      if (!pt) return;
+      lastX = pt.clientX; lastY = pt.clientY;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => { apply(active, lastX, lastY); rafId = null; });
+    }
+    function onLeave(){ reset(active); active = null; }
+
+    cards.forEach((card) => {
+      if (isTouch){
+        card.addEventListener('touchstart', (e) => { active = card; onMove(e); }, { passive: true });
+        card.addEventListener('touchmove', (e) => { if (active === card) onMove(e); }, { passive: true });
+        card.addEventListener('touchend', onLeave);
+        card.addEventListener('touchcancel', onLeave);
+      } else {
+        card.addEventListener('mouseenter', (e) => { active = card; onMove(e); });
+        card.addEventListener('mousemove', (e) => { if (active === card) onMove(e); });
+        card.addEventListener('mouseleave', onLeave);
+      }
+    });
+  })();
+</script>
+</body>
+</html>
