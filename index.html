@@ -33,6 +33,7 @@
     --tg:#0088cc;
     --sc:#FFFC00;
     --tt:#fe2c55;
+    --ig:#E4405F;
     
     --radius:14px;
     --maxw:1140px;
@@ -386,6 +387,14 @@
   .card[data-channel="tt"]:hover .card-label{color:var(--tt);}
   .card[data-channel="tt"]:hover .arrow{color:var(--tt);filter:drop-shadow(0 0 6px rgba(254,44,85,.7));}
 
+  .card[data-channel="ig"]:hover, .card[data-channel="ig"]:focus-visible{
+    border-color:rgba(228,64,95,.5);
+    box-shadow:0 22px 45px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(228,64,95,.15) inset, 0 0 34px -8px rgba(228,64,95,.3);
+  }
+  .card[data-channel="ig"]:hover .icon-wrap{background:rgba(228,64,95,.15);border-color:var(--ig);color:var(--ig);box-shadow:0 0 22px -4px rgba(228,64,95,.6), inset 0 0 14px rgba(228,64,95,.2);}
+  .card[data-channel="ig"]:hover .card-label{color:var(--ig);}
+  .card[data-channel="ig"]:hover .arrow{color:var(--ig);filter:drop-shadow(0 0 6px rgba(228,64,95,.7));}
+
   /* primary card */
   .card--primary{
     background:linear-gradient(135deg,rgba(255,47,62,.10) 0%,rgba(14,14,20,.85) 55%);
@@ -615,7 +624,7 @@
     <section aria-labelledby="contact-title">
       <div class="section-head">
         <h2 id="contact-title" class="section-title">Comms Channels</h2>
-        <span class="section-count">06 / SECURED</span>
+        <span class="section-count">07 / SECURED</span>
       </div>
 
       <div class="grid" id="grid">
@@ -700,6 +709,22 @@
           </span>
         </a>
 
+        <!-- INSTAGRAM -->
+        <a href="https://www.instagram.com/paint.ball.duhok?xtok=aGJmNDFtcXNjZWh0&utm_source=ig_contact_invite" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="ig">
+          <span class="sheen" aria-hidden="true"></span>
+          <span class="icon-wrap">
+            <i class="fa-brands fa-instagram"></i>
+          </span>
+          <span class="card-body">
+            <span class="card-label">Instagram <span class="ch-id">CH-06</span></span>
+            <span class="card-value">@paint.ball.duhok</span>
+            <span class="card-sub">Photos · Reels · Stories</span>
+          </span>
+          <span class="arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </a>
+
         <!-- LOCATION -->
         <a href="https://maps.apple.com/place?map=explore&coordinate=36.850925%2C42.909724&name=Duhok" target="_blank" rel="noopener noreferrer" class="card" data-tilt data-channel="loc">
           <span class="sheen" aria-hidden="true"></span>
@@ -707,7 +732,7 @@
             <i class="fa-solid fa-map-location-dot"></i>
           </span>
           <span class="card-body">
-            <span class="card-label">Base Location <span class="ch-id">CH-06</span></span>
+            <span class="card-label">Base Location <span class="ch-id">CH-07</span></span>
             <span class="card-value">Duhok · Iraq</span>
             <span class="card-sub">Open in Apple Maps</span>
           </span>
